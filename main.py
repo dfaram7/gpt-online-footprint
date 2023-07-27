@@ -44,8 +44,8 @@ async def websocket_endpoint(websocket: WebSocket):
             if data.startswith("start"):
                 json_data = json.loads(data[6:])
                 task = json_data.get("task")
-                report_type = json_data.get("report_type")
-                agent = json_data.get("agent")
+                report_type = 'custom_report_type'
+                agent = 'custom_agent'
                 if task and report_type and agent:
                     await manager.start_streaming(task, report_type, agent, websocket)
                 else:

@@ -3,7 +3,8 @@ const GPTResearcher = (() => {
       document.getElementById("output").innerHTML = "";
       document.getElementById("reportContainer").innerHTML = "";
   
-      addAgentResponse({ output: "🤔 Thinking about research questions for the task..." });
+      addAgentResponse({ output: "🤔 Considering relevant queries..." });
+      addAgentResponse({ output: "🤔 Report may take up to 30 mins to complete..." });
   
       listenToSockEvents();
     };
@@ -27,13 +28,10 @@ const GPTResearcher = (() => {
   
       socket.onopen = (event) => {
         const task = document.querySelector('input[name="task"]').value;
-        const report_type = document.querySelector('select[name="report_type"]').value;
-        const agent = document.querySelector('input[name="agent"]:checked').value;
+
   
         const requestData = {
-          task: task,
-          report_type: report_type,
-          agent: agent,
+          task: task
         };
   
         socket.send(`start ${JSON.stringify(requestData)}`);

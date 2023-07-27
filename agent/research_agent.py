@@ -1,4 +1,3 @@
-# Description: Research assistant class that handles the research process for a given question.
 
 # libraries
 import asyncio
@@ -15,9 +14,17 @@ from config import Config
 from agent import prompts
 import os
 import string
+from json.decoder import JSONDecodeError
 
 
 CFG = Config()
+
+def temp_json_handler(st):
+    temp_list = []
+    for x in st.split('\n'):
+        temp_list.append(x[1:-1])
+    print(temp_list)
+    return temp_list
 
 
 class ResearchAgent:
@@ -87,9 +94,16 @@ class ResearchAgent:
         Returns: list[str]: The search queries for the given question
         """
         result = await self.call_agent(prompts.generate_search_queries_prompt(self.question))
+        print(type(result))
         print(result)
-        await self.websocket.send_json({"type": "logs", "output": f"🧠 I will conduct my research based on the following queries: {result}..."})
-        return json.loads(result)
+        await self.websocket.send_json({"type": "logs", "output": f"🧠 LLM suggest the following queries: {result}..."})
+
+        try:
+            return json.loads(result)
+        except JSONDecodeError as e:
+            print('Error = ' + str(e))
+            return temp_json_handler(result)
+
 
     async def async_search(self, query):
         """ Runs the async search for the given query.
@@ -116,7 +130,7 @@ class ResearchAgent:
         Returns: str: The search summary for the given query
         """
 
-        await self.websocket.send_json({"type": "logs", "output": f"🔎 Running research for '{query}'..."})
+        await self.websocket.send_json({"type": "logs", "output": f"🔎 Searching for '{query}'..."})
 
         responses = await self.async_search(query)
 
@@ -145,16 +159,6 @@ class ResearchAgent:
         return self.research_summary
 
 
-    async def create_concepts(self):
-        """ Creates the concepts for the given question.
-        Args: None
-        Returns: list[str]: The concepts for the given question
-        """
-        result = self.call_agent(prompts.generate_concepts_prompt(self.question, self.research_summary))
-
-        await self.websocket.send_json({"type": "logs", "output": f"I will research based on the following concepts: {result}\n"})
-        return json.loads(result)
-
     async def write_report(self, report_type, websocket):
         """ Writes the report for the given question.
         Args: None
@@ -162,7 +166,7 @@ class ResearchAgent:
         """
         report_type_func = prompts.get_report_by_type(report_type)
         await websocket.send_json(
-            {"type": "logs", "output": f"✍️ Writing {report_type} for research task: {self.question}..."})
+            {"type": "logs", "output": f"✍️ Writing report on: {self.question}..."})
         answer = await self.call_agent(report_type_func(self.question, self.research_summary), stream=True,
                                        websocket=websocket)
 
@@ -170,12 +174,3 @@ class ResearchAgent:
 
         return answer, path
 
-    async def write_lessons(self):
-        """ Writes lessons on essential concepts of the research.
-        Args: None
-        Returns: None
-        """
-        concepts = await self.create_concepts()
-        for concept in concepts:
-            answer = await self.call_agent(prompts.generate_lesson_prompt(concept), stream=True)
-            write_md_to_pdf("Lesson", self.directory_name, answer)
