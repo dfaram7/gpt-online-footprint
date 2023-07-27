@@ -6,3 +6,5 @@ env/
 outputs/
 #Ignore pycache
 **/__pycache__/
+#Ignore DS
+**/.DS_Store/
