@@ -76,7 +76,7 @@ $ uvicorn main:app --reload
 ```
 <br />
 
-> **Step 7** - Go to http://localhost:8000 on any browser and enjoy researching!
+> **Step 7** - Go to http://localhost:8000 on any browser 
 
 - If you are having issues with weasyprint, please visit their website and follow the installation instructions: https://doc.courtbouillon.org/weasyprint/stable/first_steps.html
 - Check out the example_reports folder for some examples of the reports created by the tool!
